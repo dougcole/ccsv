@@ -3,7 +3,25 @@
 
 static VALUE rb_cC;
 
-static VALUE foreach(VALUE self, VALUE filename) {
+//First attempt at optional argument not working...
+/*static VALUE foreach(int argc, VALUE *argv, VALUE self) {*/
+/*  VALUE filename, delimiter;*/
+/*  char *delimiters = DELIMITERS;*/
+
+
+/*  rb_scan_args(argc, argv, '11', &filename, &delimiter);*/
+/*  if(NIL_P(delimiter)){*/
+/*    delimiters = DELIMITERS;*/
+/*  }*/
+/*  else {*/
+/*    delimiters = RSTRING(delimiter)->ptr;*/
+
+/*  }*/
+  
+
+
+static VALUE foreach(VALUE self, VALUE filename, VALUE delimiter) {
+  char *delimiters = RSTRING(delimiter)->ptr;
 
   FILE *file = fopen(StringValueCStr(filename), "r");
   if (file == NULL)
@@ -17,13 +35,13 @@ static VALUE foreach(VALUE self, VALUE filename) {
   
   while (fgets(line, sizeof(line), file) != NULL) {
     ary = rb_ary_new();
-    token = strtok(line, DELIMITERS);
+    token = strtok(line, delimiters);
     idx = 0;
     
     while (token != NULL) {
       rb_ary_store(ary, idx, rb_str_new(token, strlen(token)));
       idx ++;
-      token = strtok(NULL, DELIMITERS);
+      token = strtok(NULL, delimiters);
     }
     
     /* OBJ_FREEZE(ary); */
@@ -43,5 +61,5 @@ void
 Init_ccsv()
 {
   rb_cC = rb_define_class("Ccsv", rb_cObject);
-  rb_define_singleton_method(rb_cC, "foreach", foreach, 1);
+  rb_define_singleton_method(rb_cC, "foreach", foreach, 2);
 }
